@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sprite Animation with Popups</title>
+    <style>
+        canvas {
+            background-color: greenyellow;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="500" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const frameCount = 5;
+        const frames = [];
+        let currentIndex = 0;
+        let lastFrameTime = 0;
+
+        const popupImage = new Image();
+        popupImage.src = 'Root Folder/Nene_Kusanagi.png';
+        let popupImageReady = false;
+        popupImage.onload = () => {
+            popupImageReady = true;
+            console.log('Popup image loaded');
+        };
+
+        const popups = [];
+
+        let loadedFrames = 0;
+
+        // Load animation frames
+        for (let i = 0; i < frameCount; i++) {
+            const img = new Image();
+            img.src = `folder/frame_${i}.png`;
+            img.onload = () => {
+                loadedFrames++;
+                if (loadedFrames === frameCount) {
+                    console.log('All frames loaded');
+                    requestAnimationFrame(animate);
+                }
+            };
+            frames.push(img);
+        }
+
+        function animate(timestamp) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update sprite frame only every 100 ms
+            if (!lastFrameTime || timestamp - lastFrameTime > 100) {
+                currentIndex = (currentIndex + 1) % frames.length;
+                lastFrameTime = timestamp;
+            }
+
+            ctx.drawImage(frames[currentIndex], 200, 150);
+
+            // Draw active popups if image is ready
+            if (popupImageReady) {
+                popups.forEach(popup => {
+                    ctx.drawImage(popupImage, popup.x, popup.y, 100, 100);
+                });
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        canvas.addEventListener('click', () => {
+            if (!popupImageReady) {
+                console.log('Popup image not ready yet!');
+                return;
+            }
+
+            const x = Math.floor(Math.random() * (canvas.width - 100));
+            const y = Math.floor(Math.random() * (canvas.height - 100));
+
+            const popup = { x, y };
+            popups.push(popup);
+            console.log('Added popup at', x, y);
+
+            // Remove popup after 3 seconds
+            setTimeout(() => {
+                const index = popups.indexOf(popup);
+                if (index > -1) popups.splice(index, 1);
+                console.log('Removed popup at', x, y);
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
