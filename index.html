@@ -1,181 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Girlfriend ni Earl</title>
-    <meta name="description" content="Girlfriend ni Earl">
-    <meta property="og:title" content="Girlfriend ni Earl">
-    <meta property="og:description" content="Girlfriend ni Earl">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://wonder-hoy.github.io/Animation/">
+    <meta name="description" content="Girlfriend ni Earl" />
+    <meta property="og:title" content="Girlfriend ni Earl" />
+    <meta property="og:description" content="Girlfriend ni Earl" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://wonder-hoy.github.io/Animation/" />
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-        canvas {
-            display: block;
-            background-color: greenyellow;
-        }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        background-color: greenyellow;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <canvas id="gameCanvas"></canvas>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        const frameCount = 5;
-        const frames = [];
-        let currentIndex = 0;
-        let lastFrameTime = 0;
-
-        const nativeSpriteWidth = 200;
-        const nativeSpriteHeight = 200;
-        const aspectRatio = nativeSpriteWidth / nativeSpriteHeight;
-        const scaleFactor = 0.3;
-
-        let spriteWidth = nativeSpriteWidth;
-        let spriteHeight = nativeSpriteHeight;
-
-        const popupImage = new Image();
-        popupImage.src = 'Root Folder/Nene_Kusanagi.png';
-        let popupImageReady = false;
-        popupImage.onload = () => {
-            popupImageReady = true;
-        };
-
-        const popups = [];
-
-        let loadedFrames = 0;
-
-        // Text typing setup
-        const fullText = "....";
-        let currentLetterIndex = 0;
-        let lastTextUpdate = 0;
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            if (window.innerWidth / window.innerHeight < aspectRatio) {
-                spriteWidth = window.innerWidth * scaleFactor;
-                spriteHeight = spriteWidth / aspectRatio;
-            } else {
-                spriteHeight = window.innerHeight * scaleFactor;
-                spriteWidth = spriteHeight * aspectRatio;
-            }
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        // Load animation frames
-        for (let i = 0; i < frameCount; i++) {
-            const img = new Image();
-            img.src = `folder/frame_${i}.png`;
-            img.onload = () => {
-                loadedFrames++;
-                if (loadedFrames === frameCount) {
-                    requestAnimationFrame(animate);
-                }
-            };
-            frames.push(img);
-        }
-
-        function animate(timestamp) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Update sprite frame every 100 ms
-            if (!lastFrameTime || timestamp - lastFrameTime > 100) {
-                currentIndex = (currentIndex + 1) % frames.length;
-                lastFrameTime = timestamp;
-            }
-
-            // Update text one letter every 100 ms, then loop
-            if (!lastTextUpdate || timestamp - lastTextUpdate > 100) {
-                currentLetterIndex++;
-                if (currentLetterIndex > fullText.length) {
-                    currentLetterIndex = 1;
-                }
-                lastTextUpdate = timestamp;
-            }
-
-            const currentVisibleText = fullText.substring(0, currentLetterIndex);
-
-            // Draw text centered on top
-            ctx.font = "bold 48px sans-serif";
-            ctx.fillStyle = "black";
-            ctx.textAlign = "center";
-            ctx.fillText(currentVisibleText, canvas.width / 2, canvas.height * 0.35);
-
-            // Draw sprite centered
-            const spriteX = canvas.width / 2 - spriteWidth / 2;
-            const spriteY = canvas.height / 2 - spriteHeight / 2;
-            ctx.drawImage(frames[currentIndex], spriteX, spriteY, spriteWidth, spriteHeight);
-
-            ctx.shadowColor = "black";
-            ctx.shadowBlur = 4;
-
-            // Draw active popups with bounce, fade, rotation
-            if (popupImageReady) {
-                popups.forEach((popup, index) => {
-                    // Bounce effect: shrink to 1.0, rebound slightly
-                    if (popup.scale > 1.0) {
-                        popup.scale -= 0.05;
-                        if (popup.scale < 1.0) popup.scale = 1.0;
-                    } else if (popup.scale < 1.0) {
-                        popup.scale += 0.02;
-                    }
-
-                    // Fade out over time
-                    popup.opacity -= 0.005;
-                    if (popup.opacity <= 0) {
-                        popups.splice(index, 1);
-                        return;
-                    }
-
-                    const popupWidth = 100 * popup.scale;
-                    const popupHeight = 100 * popup.scale;
-
-                    ctx.save();
-                    ctx.globalAlpha = popup.opacity;
-                    ctx.translate(popup.x + 50, popup.y + 50); // move to popup center
-                    ctx.rotate(popup.rotation);
-                    ctx.drawImage(
-                        popupImage,
-                        -popupWidth / 2,
-                        -popupHeight / 2,
-                        popupWidth,
-                        popupHeight
-                    );
-                    ctx.restore();
-                });
-            }
-
-            requestAnimationFrame(animate);
-        }
-
-        canvas.addEventListener('click', () => {
-            if (!popupImageReady) {
-                console.log('Popup image not ready yet!');
-                return;
-            }
-
-            const x = Math.floor(Math.random() * (canvas.width - 100));
-            const y = Math.floor(Math.random() * (canvas.height - 100));
-
-            const popup = {
-                x,
-                y,
-                scale: 1.5,
-                opacity: 1,
-                rotation: (Math.random() - 0.5) * 0.4 // small random rotation
-            };
-            popups.push(popup);
-        });
-    </script>
-</body>
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+  
+      const frameCount = 5;
+      const frames = [];
+      let currentIndex = 0;
+      let lastFrameTime = 0;
+  
+      const nativeSpriteWidth = 200;
+      const nativeSpriteHeight = 200;
+      const aspectRatio = nativeSpriteWidth / nativeSpriteHeight;
+      const scaleFactor = 0.3;
+  
+      let spriteWidth = nativeSpriteWidth;
+      let spriteHeight = nativeSpriteHeight;
+  
+      const popupImage = new Image();
+      popupImage.src = 'Root Folder/Nene_Kusanagi.png';
+      let popupImageReady = false;
+      popupImage.onload = () => {
+          popupImageReady = true;
+      };
+  
+      const popupImage2 = new Image();
+      popupImage2.src = 'Root Folder/Nene_Kasunagi2.png';
+      let popupImage2Ready = false;
+      popupImage2.onload = () => {
+          popupImage2Ready = true;
+      };
+  
+      const popupImage3 = new Image();
+      popupImage3.src = 'Root Folder/Earl.png';
+      let popupImage3Ready = false;
+      popupImage3.onload = () => {
+          popupImage3Ready = true;
+      };
+  
+      const popups = [];
+      let loadedFrames = 0;
+  
+      const fullText = "....";
+      let currentLetterIndex = 0;
+      let lastTextUpdate = 0;
+  
+      function resizeCanvas() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+  
+          if (window.innerWidth / window.innerHeight < aspectRatio) {
+              spriteWidth = window.innerWidth * scaleFactor;
+              spriteHeight = spriteWidth / aspectRatio;
+          } else {
+              spriteHeight = window.innerHeight * scaleFactor;
+              spriteWidth = spriteHeight * aspectRatio;
+          }
+      }
+  
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+  
+      for (let i = 0; i < frameCount; i++) {
+          const img = new Image();
+          img.src = `folder/frame_${i}.png`;
+          img.onload = () => {
+              loadedFrames++;
+              if (loadedFrames === frameCount) {
+                  requestAnimationFrame(animate);
+              }
+          };
+          frames.push(img);
+      }
+  
+      function animate(timestamp) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+          if (!lastFrameTime || timestamp - lastFrameTime > 100) {
+              currentIndex = (currentIndex + 1) % frames.length;
+              lastFrameTime = timestamp;
+          }
+  
+          if (!lastTextUpdate || timestamp - lastTextUpdate > 100) {
+              currentLetterIndex++;
+              if (currentLetterIndex > fullText.length) {
+                  currentLetterIndex = 1;
+              }
+              lastTextUpdate = timestamp;
+          }
+  
+          const currentVisibleText = fullText.substring(0, currentLetterIndex);
+  
+          ctx.font = "bold 48px sans-serif";
+          ctx.fillStyle = "black";
+          ctx.textAlign = "center";
+          ctx.fillText(currentVisibleText, canvas.width / 2, canvas.height * 0.35);
+  
+          const spriteX = canvas.width / 2 - spriteWidth / 2;
+          const spriteY = canvas.height / 2 - spriteHeight / 2;
+          ctx.drawImage(frames[currentIndex], spriteX, spriteY, spriteWidth, spriteHeight);
+  
+          ctx.shadowColor = "black";
+          ctx.shadowBlur = 4;
+  
+          popups.forEach((popup, index) => {
+              if (popup.scale > 1.0) {
+                  popup.scale -= 0.05;
+                  if (popup.scale < 1.0) popup.scale = 1.0;
+              } else if (popup.scale < 1.0) {
+                  popup.scale += 0.02;
+              }
+  
+              popup.opacity -= 0.005;
+              if (popup.opacity <= 0) {
+                  popups.splice(index, 1);
+                  return;
+              }
+  
+              let popupWidth, popupHeight;
+              if (popup.type === 'third') {
+                  popupWidth = 600 * popup.scale; // Earl → custom size
+                  popupHeight = 600 * popup.scale;
+              } else if (popup.type === 'second') {
+                  popupWidth = 200 * popup.scale; // Nene_Kusanagi2
+                  popupHeight = 200 * popup.scale;
+              } else {
+                  popupWidth = 100 * popup.scale; // Nene_Kusanagi (first)
+                  popupHeight = 100 * popup.scale;
+              }
+  
+              ctx.save();
+              ctx.globalAlpha = popup.opacity;
+              ctx.translate(popup.x + popupWidth / 2, popup.y + popupHeight / 2);
+              ctx.rotate(popup.rotation);
+  
+              if (popup.type === 'third' && popupImage3Ready) {
+                  ctx.drawImage(popupImage3, -popupWidth / 2, -popupHeight / 2, popupWidth, popupHeight);
+              } else if (popup.type === 'second' && popupImage2Ready) {
+                  ctx.drawImage(popupImage2, -popupWidth / 2, -popupHeight / 2, popupWidth, popupHeight);
+              } else {
+                  ctx.drawImage(popupImage, -popupWidth / 2, -popupHeight / 2, popupWidth, popupHeight);
+              }
+  
+              ctx.restore();
+          });
+  
+          requestAnimationFrame(animate);
+      }
+  
+      canvas.addEventListener('click', () => {
+          if (!popupImageReady && !popupImage2Ready && !popupImage3Ready) {
+              console.log('Popup images not ready yet!');
+              return;
+          }
+  
+          const x = Math.floor(Math.random() * (canvas.width - 100));
+          const y = Math.floor(Math.random() * (canvas.height - 100));
+          const randomValue = Math.random();
+  
+          let imageType = 'first';
+          if (randomValue < 0.05 && popupImage3Ready) { // ~15% for Earl
+              imageType = 'third';
+          } else if (randomValue < 0.10 && popupImage2Ready) { // ~25% for Nene_Kusanagi2
+              imageType = 'second';
+          }
+          // else → defaults to 'first' (Nene_Kusanagi)
+  
+          const popup = {
+              x,
+              y,
+              scale: 1.5,
+              opacity: 1,
+              rotation: (Math.random() - 0.5) * 0.4,
+              type: imageType
+          };
+          popups.push(popup);
+      });
+  </script>
+  
+  </body>
 </html>
