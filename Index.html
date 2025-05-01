@@ -2,16 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sprite Animation with Popups</title>
+    <title>Full-Screen Sprite Animation with Bouncing Popups</title>
     <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
         canvas {
+            display: block;
             background-color: greenyellow;
-            border: 1px solid black;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="500" height="400"></canvas>
+    <canvas id="gameCanvas"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -21,6 +26,14 @@
         const frames = [];
         let currentIndex = 0;
         let lastFrameTime = 0;
+
+        const nativeSpriteWidth = 200;  // your real frame width
+        const nativeSpriteHeight = 200; // your real frame height
+        const aspectRatio = nativeSpriteWidth / nativeSpriteHeight;
+        const scaleFactor = 0.3;  // take up 30% of limiting dimension
+
+        let spriteWidth = nativeSpriteWidth;
+        let spriteHeight = nativeSpriteHeight;
 
         const popupImage = new Image();
         popupImage.src = 'Root Folder/Nene_Kusanagi.png';
@@ -33,6 +46,25 @@
         const popups = [];
 
         let loadedFrames = 0;
+
+        // Resize canvas and calculate proportional sprite size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            if (window.innerWidth / window.innerHeight < aspectRatio) {
+                // Width-limited
+                spriteWidth = window.innerWidth * scaleFactor;
+                spriteHeight = spriteWidth / aspectRatio;
+            } else {
+                // Height-limited
+                spriteHeight = window.innerHeight * scaleFactor;
+                spriteWidth = spriteHeight * aspectRatio;
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         // Load animation frames
         for (let i = 0; i < frameCount; i++) {
@@ -51,18 +83,35 @@
         function animate(timestamp) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Update sprite frame only every 100 ms
+            // Update sprite frame every 100 ms
             if (!lastFrameTime || timestamp - lastFrameTime > 100) {
                 currentIndex = (currentIndex + 1) % frames.length;
                 lastFrameTime = timestamp;
             }
 
-            ctx.drawImage(frames[currentIndex], 200, 150);
+            // Draw sprite centered
+            const spriteX = canvas.width / 2 - spriteWidth / 2;
+            const spriteY = canvas.height / 2 - spriteHeight / 2;
+            ctx.drawImage(frames[currentIndex], spriteX, spriteY, spriteWidth, spriteHeight);
 
-            // Draw active popups if image is ready
+            // Draw active popups with bounce
             if (popupImageReady) {
                 popups.forEach(popup => {
-                    ctx.drawImage(popupImage, popup.x, popup.y, 100, 100);
+                    if (popup.scale > 1.0) {
+                        popup.scale -= 0.05;
+                        if (popup.scale < 1.0) popup.scale = 1.0;
+                    }
+
+                    const popupWidth = 100 * popup.scale;
+                    const popupHeight = 100 * popup.scale;
+
+                    ctx.drawImage(
+                        popupImage,
+                        popup.x + (100 - popupWidth) / 2,
+                        popup.y + (100 - popupHeight) / 2,
+                        popupWidth,
+                        popupHeight
+                    );
                 });
             }
 
@@ -78,11 +127,10 @@
             const x = Math.floor(Math.random() * (canvas.width - 100));
             const y = Math.floor(Math.random() * (canvas.height - 100));
 
-            const popup = { x, y };
+            const popup = { x, y, scale: 1.5 };
             popups.push(popup);
             console.log('Added popup at', x, y);
 
-            // Remove popup after 3 seconds
             setTimeout(() => {
                 const index = popups.indexOf(popup);
                 if (index > -1) popups.splice(index, 1);
