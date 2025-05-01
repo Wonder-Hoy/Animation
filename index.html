@@ -62,6 +62,16 @@
           popupImage3Ready = true;
       };
   
+      const fullscreenImage = new Image();
+      fullscreenImage.src = 'Root Folder/fullscreen.png';
+      let fullscreenReady = false;
+      fullscreenImage.onload = () => {
+          fullscreenReady = true;
+      };
+  
+      let showFullscreen = false;
+      let thirdPopupCount = 0;
+  
       const popups = [];
       let loadedFrames = 0;
   
@@ -143,13 +153,13 @@
   
               let popupWidth, popupHeight;
               if (popup.type === 'third') {
-                  popupWidth = 600 * popup.scale; // Earl → custom size
+                  popupWidth = 600 * popup.scale; // Earl
                   popupHeight = 600 * popup.scale;
               } else if (popup.type === 'second') {
                   popupWidth = 200 * popup.scale; // Nene_Kusanagi2
                   popupHeight = 200 * popup.scale;
               } else {
-                  popupWidth = 100 * popup.scale; // Nene_Kusanagi (first)
+                  popupWidth = 100 * popup.scale; // Nene_Kasunagi
                   popupHeight = 100 * popup.scale;
               }
   
@@ -169,6 +179,14 @@
               ctx.restore();
           });
   
+          // Draw fullscreen overlay if triggered
+          if (showFullscreen && fullscreenReady) {
+              ctx.save();
+              ctx.globalAlpha = 1;
+              ctx.drawImage(fullscreenImage, 0, 0, canvas.width, canvas.height);
+              ctx.restore();
+          }
+  
           requestAnimationFrame(animate);
       }
   
@@ -183,12 +201,11 @@
           const randomValue = Math.random();
   
           let imageType = 'first';
-          if (randomValue < 0.05 && popupImage3Ready) { // ~15% for Earl
+          if (randomValue < 0.05 && popupImage3Ready) { // ~5% Earl
               imageType = 'third';
-          } else if (randomValue < 0.10 && popupImage2Ready) { // ~25% for Nene_Kusanagi2
+          } else if (randomValue < 0.10 && popupImage2Ready) { // ~10% Nene_Kusanagi2
               imageType = 'second';
           }
-          // else → defaults to 'first' (Nene_Kusanagi)
   
           const popup = {
               x,
@@ -199,8 +216,20 @@
               type: imageType
           };
           popups.push(popup);
+  
+          // Count third image appearances
+          if (imageType === 'third') {
+              thirdPopupCount++;
+              if (thirdPopupCount >= 5 && fullscreenReady) {
+                  showFullscreen = true;
+                  thirdPopupCount = 0; // reset
+  
+                  setTimeout(() => {
+                      showFullscreen = false;
+                  }, 1500); // show for 1.5 seconds
+              }
+          }
       });
   </script>
-  
   </body>
 </html>
