@@ -1,0 +1,13 @@
+{
+  "folders": [
+	{
+		"path": "."
+	},
+	{
+		"path": "D:/PythonRepo"
+	}
+],
+  "settings": {
+    "liveServer.settings.multiRootWorkspaceName": "mastering-git"
+  }
+}
